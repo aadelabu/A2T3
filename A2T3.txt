@@ -1,0 +1,66 @@
+2a
+#Install and load the WDI, Map, and countrycode packages
+
+install.packages("WDI")
+WDIsearch("gdp.*capita.*PPP")
+WDIsearch("CO2.*capita")
+wdi_data = WDI(indicator=c("NY.GDP.PCAP.PP.KD","EN.ATM.CO2E.PC"),start=2010,end=2010,extra=TRUE)
+library(WDI)
+wdi_data = as_tibble(wdi_data)
+glimpse(wdi_data)
+wdi_data <- wdi_data %>%
+  rename(GDPpercap=NY.GDP.PCAP.PP.KD,Emit_CO2percap=EN.ATM.CO2E.PC)
+glimpse(wdi_data)
+write_csv(wdi_data,"wdi_CO2_GDP.csv")
+wdi = read_csv("wdi_CO2_GDP.csv")
+install.packages("maps")
+library(maps)
+dat_map <- map_data("world")
+install.packages("countrycode")
+library(countrycode)
+dat_map$ccode<- countrycode(dat_map$region,origin="country.name",destination="wb")
+wdi$ccode <- countrycode(wdi$country,origin="country.name",destination="wb")
+merged <- full_join(dat_map, wdi, by="ccode")
+
+merged1 = merged %>%	# I renamed the results from Emit_CO2percap to CO2percap)
+  rename(CO2percap = Emit_CO2percap)
+ggplot(merged1, aes(x = long, y = lat, group = group, fill = log10(CO2percap))) +
+  geom_polygon() +
+  scale_fill_gradient(low = "blue", high = "red")
+
+2b
+
+Install and load the following libraries network, ggnetwork, tidygraph, devtools, 
+
+install.packages("tidygraph", INSTALL_opts = c("--no-multiarch"))
+install.packages("network")
+install.packages("ggnetwork")
+install.packages("devtools")
+install_github("DougLuke/UserNetR")
+library(ggplot2)
+library(tidyverse)
+library(devtools)
+install_github("DougLuke/UserNetR")
+library(tidygraph)
+library(UserNetR)
+library(ggnetwork)
+library(network)
+data(Bali)
+head(Bali)
+summary(Bali)
+class(Bali)
+Bali_t = as_tbl_graph(Bali)		#this is to show me the no of nodes and edges
+ggnetplot(Bali)
+
+2c
+Since it is a continuation of the solutions above, the libraries are already loaded into R.
+Add some colour gradient to the Bali network in 2a.
+
+Bali_r <- ggnetwork(Bali)
+
+ggplot(Bali_r, aes(x,y, xend = xend, yend = yend)) +
+  geom_edges(col = "tomato", alpha = 0.6) +
+  geom_nodetext_repel(aes(label = role), size = 3) +
+  theme_blank()
+
+
